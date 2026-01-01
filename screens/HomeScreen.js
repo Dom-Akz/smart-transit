@@ -48,7 +48,7 @@ const HomeScreen = ({ navigation }) => {
   return (
     <View style={styles.container}>
       <StatusBar barStyle="dark-content" />
-      
+
       {/* Background Map */}
       <MapView
         style={styles.map}
@@ -81,18 +81,32 @@ const HomeScreen = ({ navigation }) => {
         <View style={styles.contentContainer}>
           <Text style={styles.greeting}>Hello, Traveler! \ud83d\udc4b</Text>
           <Text style={styles.subtitle}>Where would you like to go today?</Text>
-          
+
           {loading && (
-             <View style={styles.locationStatus}>
-                <ActivityIndicator size="small" color="#4285F4" />
-                <Text style={styles.locationText}> Locating you...</Text>
-             </View>
+            <View style={styles.locationStatus}>
+              <ActivityIndicator size="small" color="#4285F4" />
+              <Text style={styles.locationText}> Locating you...</Text>
+            </View>
           )}
           {!loading && location && (
-             <View style={styles.locationStatus}>
-                <Text style={styles.locationText}>\ud83d\udccd Current Location Active</Text>
-             </View>
+            <View style={styles.locationStatus}>
+              <Text style={styles.locationText}>\ud83d\udccd Current Location Active</Text>
+            </View>
           )}
+        </View>
+        <View style={styles.quickActions}>
+          <TouchableOpacity
+            style={styles.actionButton}
+            onPress={() => navigation.navigate('Favorites')}
+          >
+            <Text style={styles.actionText}>My Places</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.actionButton}
+            onPress={() => navigation.navigate('Settings')}
+          >
+            <Text style={styles.actionText}>Settings</Text>
+          </TouchableOpacity>
         </View>
       </View>
     </View>
@@ -165,6 +179,22 @@ const styles = StyleSheet.create({
     color: '#4285F4',
     fontWeight: '600',
     marginLeft: 5,
+  },
+  quickActions: {
+    flexDirection: 'row',
+    marginTop: 20,
+  },
+  actionButton: {
+    flex: 1,
+    backgroundColor: '#4285F4',
+    padding: 12,
+    borderRadius: 10,
+    marginHorizontal: 5,
+    alignItems: 'center',
+  },
+  actionText: {
+    color: '#fff',
+    fontWeight: '600',
   },
 });
 

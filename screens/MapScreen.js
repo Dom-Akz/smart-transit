@@ -1,5 +1,6 @@
+// screens/MapScreen.js
 import React, { useState, useEffect, useRef } from 'react';
-import { View, StyleSheet, ActivityIndicator, Text, ScrollView, Dimensions, Alert, TouchableOpacity, FlatList, Animated } from 'react-native';
+import { View, StyleSheet, ActivityIndicator, Text, ScrollView, Dimensions, Alert, TouchableOpacity, FlatList, Animated, Share } from 'react-native';
 import MapView, { Marker, Polyline } from 'react-native-maps';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -7,10 +8,9 @@ import TransportCard from '../components/TransportCard';
 import { getDirections, getTransitOptions } from '../services/directions';
 import SoundService from '../services/SoundService';
 import * as Location from 'expo-location';
+import QRCodeShare from '../components/QRCodeShare';
 
-/**
- * MapScreen: Displays the route on a map and allows mode switching.
- */
+
 const MapScreen = ({ route }) => {
   const { origin, destination } = route.params; 
   
@@ -25,6 +25,9 @@ const MapScreen = ({ route }) => {
   // For Transit Mode
   const [transitOptions, setTransitOptions] = useState([]);
   const [selectedTransitStation, setSelectedTransitStation] = useState(null);
+  
+  // QR Code Sharing
+  const [showQRCode, setShowQRCode] = useState(false);
   
   const mapRef = useRef(null);
   const locationSubscription = useRef(null);
@@ -124,6 +127,20 @@ const MapScreen = ({ route }) => {
         zoom: 17,
         pitch: 0,
       });
+    }
+  };
+
+  // Simple share function
+  const shareRoute = async () => {
+    try {
+      const message = `Check out my route!\n\nFrom: ${origin.latitude.toFixed(4)}, ${origin.longitude.toFixed(4)}\nTo: ${destination.latitude.toFixed(4)}, ${destination.longitude.toFixed(4)}\nDistance: ${distance}\nDuration: ${duration}\nMode: ${mode}`;
+      
+      await Share.share({
+        message: message,
+        title: 'Share Route from Smart Transit',
+      });
+    } catch (error) {
+      console.error('Error sharing:', error);
     }
   };
 
@@ -237,6 +254,24 @@ const MapScreen = ({ route }) => {
           
           <View style={styles.panelHandle} />
 
+          {/* QR Code Share Button */}
+          <TouchableOpacity 
+            style={styles.shareQRButton}
+            onPress={() => setShowQRCode(true)}
+          >
+            <Ionicons name="qr-code" size={20} color="#fff" />
+            <Text style={styles.shareQRButtonText}> Share QR Code</Text>
+          </TouchableOpacity>
+
+          {/* Simple Share Button */}
+          <TouchableOpacity 
+            style={styles.shareButton}
+            onPress={shareRoute}
+          >
+            <Ionicons name="share-social" size={20} color="#fff" />
+            <Text style={styles.shareButtonText}> Share Route</Text>
+          </TouchableOpacity>
+
           {/* MOVE Button */}
           {mode !== 'transit' && (
             <TouchableOpacity onPress={startNavigation} activeOpacity={0.8}>
@@ -280,6 +315,19 @@ const MapScreen = ({ route }) => {
           {mode === 'transit' && !loading && renderTransitOptions()}
         </View>
       )}
+
+      {/* QR Code Share Modal */}
+      <QRCodeShare
+        routeData={{
+          origin,
+          destination,
+          mode,
+          distance,
+          duration
+        }}
+        visible={showQRCode}
+        onClose={() => setShowQRCode(false)}
+      />
     </View>
   );
 };
@@ -321,7 +369,7 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: -5 },
     shadowOpacity: 0.15,
     shadowRadius: 10,
-    height: 300, 
+    height: 350, // Increased height for share buttons
   },
   panelHandle: {
     width: 40,
@@ -331,6 +379,41 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     marginBottom: 20,
   },
+  // Share QR Button
+  shareQRButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#9C27B0',
+    padding: 15,
+    borderRadius: 10,
+    marginBottom: 10,
+    elevation: 3,
+  },
+  shareQRButtonText: {
+    color: '#fff',
+    fontWeight: '600',
+    fontSize: 16,
+    marginLeft: 8,
+  },
+  // Simple Share Button
+  shareButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#0F9D58',
+    padding: 15,
+    borderRadius: 10,
+    marginBottom: 15,
+    elevation: 3,
+  },
+  shareButtonText: {
+    color: '#fff',
+    fontWeight: '600',
+    fontSize: 16,
+    marginLeft: 8,
+  },
+  // Existing styles
   moveButton: {
     flexDirection: 'row',
     justifyContent: 'center',
